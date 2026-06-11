@@ -1,0 +1,53 @@
+name: omra_companion
+description: "Omra Companion — Guide spirituel premium pour les pèlerins. Sponsorisé par Omra Pour Tous."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Offline Database
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Maps (OSM offline-ready)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # Audio
+  just_audio: ^0.9.42
+
+  # GPS & Compass
+  geolocator: ^13.0.2
+  flutter_compass: ^0.8.1
+
+  # UI Components
+  percent_indicator: ^4.2.3
+  font_awesome_flutter: ^10.8.0
+  google_fonts: ^6.2.1
+
+  # Utilities
+  url_launcher: ^6.3.1
+  intl: ^0.20.2
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/audio/
