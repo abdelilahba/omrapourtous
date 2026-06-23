@@ -7,9 +7,8 @@ import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 
 import 'features/home/presentation/home_screen.dart';
-import 'features/rituals/presentation/rituals_counter_screen.dart';
-import 'features/group/presentation/group_screen.dart';
-import 'features/guide/presentation/checklist_screen.dart';
+import 'features/guide/presentation/spiritual_guide_screen.dart';
+import 'features/agency/presentation/notifications_inbox_screen.dart';
 import 'features/agency/presentation/agency_hub_screen.dart';
 import 'shared/widgets/app_bottom_nav.dart';
 
@@ -19,7 +18,7 @@ final localeProvider = StateProvider<Locale>((ref) {
   if (savedCode != null) {
     return Locale(savedCode);
   }
-  return const Locale('fr');
+  return const Locale('ar');
 });
 
 // Theme Provider (Light/Dark/System)
@@ -52,7 +51,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp(
-      title: 'Omra Companion',
+      title: 'Omra Pour Tous',
       debugShowCheckedModeBanner: false,
       
       // Thèmes Premium (Coins arrondis 20dp, Emerald & Gold)
@@ -95,9 +94,8 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    RitualsCounterScreen(),
-    GroupScreen(),
-    ChecklistScreen(),
+    SpiritualGuideScreen(),
+    NotificationsInboxScreen(),
     AgencyHubScreen(),
   ];
 

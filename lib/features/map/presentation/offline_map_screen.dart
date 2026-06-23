@@ -462,7 +462,7 @@ class _OfflineMapScreenState extends State<OfflineMapScreen> {
     if (_mapStyle == 'premium') {
       tileUrl = isDark 
           ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
     } else if (_mapStyle == 'satellite') {
       tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
     }
@@ -478,6 +478,9 @@ class _OfflineMapScreenState extends State<OfflineMapScreen> {
               initialZoom: _selectedSite?.zoom ?? 16.0,
               minZoom: 3.0,
               maxZoom: 18.5,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+              ),
             ),
             children: [
               TileLayer(
@@ -812,7 +815,7 @@ class _OfflineMapScreenState extends State<OfflineMapScreen> {
                     
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Carte changée en mode : ${_mapStyle == 'premium' ? 'Premium vectoriel' : _mapStyle == 'satellite' ? 'Satellite réel' : 'OpenStreetMap'}'),
+                        content: Text('Carte changée en mode : ${_mapStyle == 'premium' ? 'Premium 3D & Clair' : _mapStyle == 'satellite' ? 'Satellite réel' : 'OpenStreetMap'}'),
                         duration: const Duration(seconds: 1),
                       ),
                     );

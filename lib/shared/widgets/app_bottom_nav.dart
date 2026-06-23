@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:omra_companion/core/theme/app_colors.dart';
+import 'package:omra_companion/core/l10n/app_localizations.dart';
 
 /// Widget de navigation bottom bar premium avec 5 onglets.
 /// Design avec indicateur actif animé et icônes FontAwesome.
@@ -43,32 +44,26 @@ class AppBottomNav extends StatelessWidget {
                 context,
                 index: 0,
                 icon: FontAwesomeIcons.house,
-                label: 'Accueil',
+                label: context.translate('nav_home'),
               ),
               _buildNavItem(
                 context,
                 index: 1,
-                icon: FontAwesomeIcons.rotate,
-                label: 'Rituels',
-              ),
-              _buildNavItem(
-                context,
-                index: 2,
-                icon: FontAwesomeIcons.locationDot,
-                label: 'SOS',
+                icon: FontAwesomeIcons.bookOpen,
+                label: context.translate('nav_guide'),
                 isSpecial: true,
               ),
               _buildNavItem(
                 context,
-                index: 3,
-                icon: FontAwesomeIcons.bookOpen,
-                label: 'Guide',
+                index: 2,
+                icon: FontAwesomeIcons.bell,
+                label: context.translate('nav_messages'),
               ),
               _buildNavItem(
                 context,
-                index: 4,
+                index: 3,
                 icon: FontAwesomeIcons.crown,
-                label: 'Agence',
+                label: context.translate('nav_agency'),
               ),
             ],
           ),

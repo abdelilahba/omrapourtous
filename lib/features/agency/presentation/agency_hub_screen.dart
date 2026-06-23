@@ -3,8 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:omra_companion/core/theme/app_colors.dart';
 
-/// Écran Hub de l'agence "Omra Pour Tous".
-/// Présentation premium, bouton WhatsApp, formulaire de brochure.
 class AgencyHubScreen extends StatefulWidget {
   const AgencyHubScreen({super.key});
 
@@ -13,22 +11,7 @@ class AgencyHubScreen extends StatefulWidget {
 }
 
 class _AgencyHubScreenState extends State<AgencyHubScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  String _selectedDestination = 'Omra Standard';
-  bool _formSubmitted = false;
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  /// Ouvre WhatsApp avec le numéro de l'agence
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse('https://wa.me/212666658171?text=Assalamu%20Alaykum%20!%20Je%20souhaite%20des%20informations%20sur%20vos%20offres%20Omra.');
     if (await canLaunchUrl(uri)) {
@@ -36,36 +19,10 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     }
   }
 
-  /// Simule l'envoi du formulaire de brochure
-  void _submitBrochureForm() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        _formSubmitted = true;
-      });
-      // Dans une version production, envoyer les données à un backend
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AppColors.primaryGreen,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          content: const Row(
-            children: [
-              Icon(FontAwesomeIcons.circleCheck, color: Colors.white, size: 18),
-              SizedBox(width: 12),
-              Text(
-                'Demande envoyée ! Nous vous contacterons.',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
       body: SafeArea(
@@ -74,7 +31,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           child: Column(
             children: [
               // ──── HEADER PREMIUM ────
-              _buildPremiumHeader(isDark),
+              _buildPremiumHeader(isDark, isAr),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -84,38 +41,29 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
                     const SizedBox(height: 24),
 
                     // ──── STATS DE L'AGENCE ────
-                    _buildStatsRow(isDark),
+                    _buildStatsRow(isDark, isAr),
                     const SizedBox(height: 24),
 
                     // ──── BOUTON WHATSAPP ────
-                    _buildWhatsAppButton(),
+                    _buildWhatsAppButton(isAr),
                     const SizedBox(height: 24),
 
                     // ──── SERVICES ────
                     Text(
-                      'Nos Services',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      isAr ? 'خدماتنا المميزة' : 'Nos Services',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
-                    _buildServicesGrid(isDark),
-                    const SizedBox(height: 24),
-
-                    // ──── FORMULAIRE DE BROCHURE ────
-                    Text(
-                      'Demander une Brochure',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildBrochureForm(isDark),
+                    _buildServicesGrid(isDark, isAr),
                     const SizedBox(height: 24),
 
                     // ──── TÉMOIGNAGES ────
                     Text(
-                      'Témoignages',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      isAr ? 'آراء المعتمرين' : 'Témoignages',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
-                    _buildTestimonials(isDark),
+                    _buildTestimonials(isDark, isAr),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -127,8 +75,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     );
   }
 
-  /// Header premium avec gradient et infos de l'agence
-  Widget _buildPremiumHeader(bool isDark) {
+  Widget _buildPremiumHeader(bool isDark, bool isAr) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
@@ -163,11 +110,11 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
               color: AppColors.accentGold,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
-              '👑 LICENCE MINISTÉRIELLE OFFICIELLE',
-              style: TextStyle(
+            child: Text(
+              isAr ? '👑 ترخيص رسمي من وزارة السياحة المغربية' : '👑 LICENCE MINISTÉRIELLE OFFICIELLE',
+              style: const TextStyle(
                 color: Colors.black,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
               ),
@@ -175,27 +122,29 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Logo placeholder (cercle avec initiales)
+          // Logo
           Container(
-            width: 80,
-            height: 80,
+            width: 85,
+            height: 85,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.accentGold.withValues(alpha: 0.5),
-                width: 2,
+                color: AppColors.accentGold,
+                width: 2.5,
               ),
-            ),
-            child: const Center(
-              child: Text(
-                'OPT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/logo.jpg',
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -212,11 +161,11 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Votre partenaire de confiance pour un pèlerinage serein',
+            isAr ? 'شريككم المعتمد والموثوق لرحلات الحج والعمرة بسلام وطمأنينة' : 'Votre partenaire de confiance pour un pèlerinage serein',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 14,
+              fontSize: 13,
               height: 1.4,
             ),
           ),
@@ -225,15 +174,14 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     );
   }
 
-  /// Ligne de stats de l'agence
-  Widget _buildStatsRow(bool isDark) {
+  Widget _buildStatsRow(bool isDark, bool isAr) {
     return Row(
       children: [
         Expanded(
           child: _buildStatItem(
             icon: FontAwesomeIcons.calendarCheck,
             value: '12+',
-            label: 'Ans d\'expérience',
+            label: isAr ? 'سنوات الخبرة' : 'Ans d\'expérience',
             color: AppColors.primaryGreen,
             isDark: isDark,
           ),
@@ -243,7 +191,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           child: _buildStatItem(
             icon: FontAwesomeIcons.users,
             value: '1000+',
-            label: 'Pèlerins satisfaits',
+            label: isAr ? 'معتمر راضٍ' : 'Pèlerins satisfaits',
             color: AppColors.accentGold,
             isDark: isDark,
           ),
@@ -253,7 +201,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           child: _buildStatItem(
             icon: FontAwesomeIcons.star,
             value: '4.9',
-            label: 'Note moyenne',
+            label: isAr ? 'التقييم العام' : 'Note moyenne',
             color: AppColors.secondaryGreen,
             isDark: isDark,
           ),
@@ -289,7 +237,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
           Text(
             value,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: color,
             ),
@@ -308,16 +256,15 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     );
   }
 
-  /// Bouton WhatsApp
-  Widget _buildWhatsAppButton() {
+  Widget _buildWhatsAppButton(bool isAr) {
     return GestureDetector(
       onTap: _openWhatsApp,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: const Color(0xFF25D366),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF25D366).withValues(alpha: 0.4),
@@ -326,16 +273,16 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 24),
-            SizedBox(width: 12),
+            const Icon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 24),
+            const SizedBox(width: 12),
             Text(
-              'Contactez-nous sur WhatsApp',
-              style: TextStyle(
+              isAr ? 'تواصل معنا مباشرة عبر واتساب' : 'Contactez-nous sur WhatsApp',
+              style: const TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -345,13 +292,12 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     );
   }
 
-  /// Grille de services
-  Widget _buildServicesGrid(bool isDark) {
+  Widget _buildServicesGrid(bool isDark, bool isAr) {
     final services = [
-      {'icon': FontAwesomeIcons.kaaba, 'title': 'Omra Standard', 'color': AppColors.primaryGreen},
-      {'icon': FontAwesomeIcons.crown, 'title': 'Omra VIP', 'color': AppColors.accentGold},
-      {'icon': FontAwesomeIcons.plane, 'title': 'Vol + Hôtel', 'color': const Color(0xFF6366F1)},
-      {'icon': FontAwesomeIcons.peopleGroup, 'title': 'Groupe Privé', 'color': const Color(0xFFEC4899)},
+      {'icon': FontAwesomeIcons.kaaba, 'title': isAr ? 'عمرة اقتصادية' : 'Omra Standard', 'color': AppColors.primaryGreen},
+      {'icon': FontAwesomeIcons.crown, 'title': isAr ? 'عمرة فاخرة VIP' : 'Omra VIP', 'color': AppColors.accentGold},
+      {'icon': FontAwesomeIcons.plane, 'title': isAr ? 'تذكرة + فندق' : 'Vol + Hôtel', 'color': const Color(0xFF6366F1)},
+      {'icon': FontAwesomeIcons.peopleGroup, 'title': isAr ? 'مجموعات خاصة' : 'Groupe Privé', 'color': const Color(0xFFEC4899)},
     ];
 
     return GridView.builder(
@@ -406,8 +352,8 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
                     Text(
                       service['title'] as String,
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
                         color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                       ),
                     ),
@@ -421,154 +367,29 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
     );
   }
 
-  /// Formulaire de demande de brochure
-  Widget _buildBrochureForm(bool isDark) {
-    if (_formSubmitted) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.primaryGreen.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.primaryGreen.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Column(
-          children: [
-            const Icon(
-              FontAwesomeIcons.circleCheck,
-              color: AppColors.primaryGreen,
-              size: 48,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Demande envoyée !',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Notre équipe vous contactera dans les 24h insha\'Allah.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => setState(() => _formSubmitted = false),
-              child: const Text('Nouvelle demande'),
-            ),
-          ],
-        ),
-      );
-    }
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCardBackground : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                hintText: 'Nom complet',
-                prefixIcon: Icon(FontAwesomeIcons.user, size: 16),
-              ),
-              validator: (v) => v?.isEmpty ?? true ? 'Champ requis' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                hintText: 'Email',
-                prefixIcon: Icon(FontAwesomeIcons.envelope, size: 16),
-              ),
-              validator: (v) {
-                if (v?.isEmpty ?? true) return 'Champ requis';
-                if (!v!.contains('@')) return 'Email invalide';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                hintText: 'Téléphone (ex: +212...)',
-                prefixIcon: Icon(FontAwesomeIcons.phone, size: 16),
-              ),
-              validator: (v) => v?.isEmpty ?? true ? 'Champ requis' : null,
-            ),
-            const SizedBox(height: 12),
 
-            // Dropdown destination
-            DropdownButtonFormField<String>(
-              initialValue: _selectedDestination,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(FontAwesomeIcons.kaaba, size: 16),
-              ),
-              borderRadius: BorderRadius.circular(12),
-              items: const [
-                DropdownMenuItem(value: 'Omra Standard', child: Text('Omra Standard')),
-                DropdownMenuItem(value: 'Omra VIP', child: Text('Omra VIP')),
-                DropdownMenuItem(value: 'Omra + Médine', child: Text('Omra + Médine')),
-                DropdownMenuItem(value: 'Groupe Privé', child: Text('Groupe Privé')),
-              ],
-              onChanged: (v) => setState(() => _selectedDestination = v ?? 'Omra Standard'),
-            ),
-            const SizedBox(height: 20),
-
-            // Bouton d'envoi
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _submitBrochureForm,
-                icon: const Icon(FontAwesomeIcons.paperPlane, size: 16),
-                label: const Text('Recevoir la Brochure'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Section témoignages
-  Widget _buildTestimonials(bool isDark) {
+  Widget _buildTestimonials(bool isDark, bool isAr) {
     final testimonials = [
       {
-        'name': 'Ahmed B.',
-        'text': 'Un service exceptionnel ! Tout était parfaitement organisé. Je recommande Omra Pour Tous à tous les futurs pèlerins.',
+        'name': 'أحمد ب.',
+        'text': isAr 
+            ? 'خدمة ممتازة وتأطير ديني على أعلى مستوى خلال رحلتنا لعمرة رمضان. أنصح بالتعامل معهم بشدة.' 
+            : 'Un service exceptionnel ! Tout était parfaitement organisé. Je recommande Omra Pour Tous.',
         'rating': 5,
       },
       {
-        'name': 'Fatima Z.',
-        'text': 'Ma première Omra s\'est déroulée sans aucun souci grâce à cette agence. Qu\'Allah les récompense.',
+        'name': 'فاطمة الزهراء',
+        'text': isAr 
+            ? 'عمرتي الأولى مرت في أفضل الظروف بفضل الله ثم بفضل مجهودات وإرشادات مرشدي هذه الوكالة.' 
+            : 'Ma première Omra s\'est déroulée sans aucun souci grâce à cette agence. Qu\'Allah les récompense.',
         'rating': 5,
       },
       {
-        'name': 'Youssef M.',
-        'text': 'Rapport qualité-prix imbattable. Hôtel à 2 min du Haram, guide francophone dédié.',
+        'name': 'يوسف م.',
+        'text': isAr 
+            ? 'قرب الفنادق وجودة التنقلات والرحلات كانت ممتازة جداً. جزاكم الله خيراً على حسن المعاملة.' 
+            : 'Rapport qualité-prix imbattable. Hôtel très proche du Haram, guide francophone dédié.',
         'rating': 5,
       },
     ];
@@ -617,7 +438,7 @@ class _AgencyHubScreenState extends State<AgencyHubScreen> {
                         Text(
                           testimonial['name'] as String,
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                             color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                           ),
                         ),

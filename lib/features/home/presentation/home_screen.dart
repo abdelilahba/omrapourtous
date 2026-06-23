@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:omra_companion/main.dart';
+import 'package:omra_companion/core/database/hive_service.dart';
 import 'package:omra_companion/core/theme/app_colors.dart';
+import 'package:omra_companion/core/l10n/app_localizations.dart';
 import 'package:omra_companion/features/qibla/presentation/qibla_screen.dart';
 import 'package:omra_companion/features/audio/presentation/audio_duas_screen.dart';
 import 'package:omra_companion/features/map/presentation/offline_map_screen.dart';
-import 'package:omra_companion/features/sos/presentation/sos_screen.dart';
+import 'package:omra_companion/features/tasbih/presentation/tasbih_screen.dart';
 
 /// Écran d'accueil — Dashboard principal du pèlerin.
 /// Affiche un message de bienvenue, les stats rapides, le countdown
@@ -38,7 +43,7 @@ class HomeScreen extends StatelessWidget {
 
                 // ──── STATS RAPIDES ────
                 Text(
-                  'Votre Progression',
+                  context.translate('progression_title'),
                   style: textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 12),
@@ -47,7 +52,7 @@ class HomeScreen extends StatelessWidget {
 
                 // ──── RACCOURCIS ────
                 Text(
-                  'Accès Rapide',
+                  context.translate('quick_access_title'),
                   style: textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 12),
@@ -74,7 +79,7 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Assalamu Alaykum 🌙',
+                context.translate('welcome_title'),
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.accentGold,
                   fontWeight: FontWeight.w500,
@@ -82,7 +87,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Bienvenue, Pèlerin',
+                context.translate('welcome_subtitle'),
                 style: textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -90,35 +95,91 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        // Avatar / Settings
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryGreen.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        // Language Selector Menu
+        Consumer(
+          builder: (context, ref, child) {
+            final currentLocale = ref.watch(localeProvider);
+            return PopupMenuButton<String>(
+              initialValue: currentLocale.languageCode,
+              tooltip: 'Changer la langue',
+              icon: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  FontAwesomeIcons.globe,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
-            ],
-          ),
-          child: const Icon(
-            FontAwesomeIcons.kaaba,
-            color: Colors.white,
-            size: 22,
-          ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              onSelected: (String code) async {
+                ref.read(localeProvider.notifier).state = Locale(code);
+                await HiveService.saveSetting('language_code', code);
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Text('العربية', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 8),
+                      Text('🇲🇦/🇸🇦', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'fr',
+                  child: Row(
+                    children: [
+                      Text('Français', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 8),
+                      Text('🇫🇷', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Text('English', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 8),
+                      Text('🇬🇧', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
   Widget _buildSponsorBanner(BuildContext context, bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+    return GestureDetector(
+      onTap: () async {
+        final url = 'https://wa.me/212666658171?text=Assalamu%20Alaykum%20!%20Je%20souhaite%20des%20informations%20sur%20vos%20offres%20Omra.';
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -148,9 +209,9 @@ class HomeScreen extends StatelessWidget {
                   color: AppColors.accentGold,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'SPONSORISÉ PAR',
-                  style: TextStyle(
+                child: Text(
+                  context.translate('sponsor_title'),
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -171,7 +232,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '12+ ans d\'expérience • Licence officielle',
+            context.translate('sponsor_desc'),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
               fontSize: 14,
@@ -187,14 +248,14 @@ class HomeScreen extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.3),
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 16),
-                SizedBox(width: 8),
+                const Icon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
                 Text(
-                  'Réservez votre Omra',
-                  style: TextStyle(
+                  context.translate('sponsor_btn'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -205,8 +266,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStatsGrid(BuildContext context, bool isDark) {
     return Row(
@@ -215,7 +277,7 @@ class HomeScreen extends StatelessWidget {
           child: _buildStatCard(
             context,
             icon: FontAwesomeIcons.rotate,
-            title: 'Tawaf',
+            title: context.translate('tawaf'),
             value: '0/7',
             color: AppColors.primaryGreen,
             isDark: isDark,
@@ -226,7 +288,7 @@ class HomeScreen extends StatelessWidget {
           child: _buildStatCard(
             context,
             icon: FontAwesomeIcons.personWalking,
-            title: 'Sa\'i',
+            title: context.translate('sai'),
             value: '0/7',
             color: AppColors.secondaryGreen,
             isDark: isDark,
@@ -236,9 +298,9 @@ class HomeScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             context,
-            icon: FontAwesomeIcons.listCheck,
-            title: 'Checklist',
-            value: '0%',
+            icon: FontAwesomeIcons.bookOpen,
+            title: context.translate('nav_guide'),
+            value: '100%',
             color: AppColors.accentGold,
             isDark: isDark,
           ),
@@ -310,7 +372,7 @@ class HomeScreen extends StatelessWidget {
               child: _buildActionTile(
                 context,
                 icon: FontAwesomeIcons.compass,
-                title: 'Direction\nQibla',
+                title: context.translate('qibla_title'),
                 gradient: const LinearGradient(
                   colors: [Color(0xFF0E8C43), Color(0xFF5CAF6E)],
                 ),
@@ -328,7 +390,7 @@ class HomeScreen extends StatelessWidget {
               child: _buildActionTile(
                 context,
                 icon: FontAwesomeIcons.headphones,
-                title: 'Audio\nDuas',
+                title: context.translate('audio_title'),
                 gradient: const LinearGradient(
                   colors: [Color(0xFFFFB800), Color(0xFFFF8C00)],
                 ),
@@ -350,7 +412,7 @@ class HomeScreen extends StatelessWidget {
               child: _buildActionTile(
                 context,
                 icon: FontAwesomeIcons.mapLocationDot,
-                title: 'Carte\nHors-ligne',
+                title: context.translate('map_title'),
                 gradient: const LinearGradient(
                   colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                 ),
@@ -367,16 +429,16 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _buildActionTile(
                 context,
-                icon: FontAwesomeIcons.triangleExclamation,
-                title: 'SOS\nFamille',
+                icon: FontAwesomeIcons.circleNotch,
+                title: context.translate('tasbih_title'),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFF97316)],
+                  colors: [Color(0xFFF43F5E), Color(0xFFD946EF)],
                 ),
                 isDark: isDark,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SosScreen()),
+                    MaterialPageRoute(builder: (context) => const TasbihScreen()),
                   );
                 },
               ),
